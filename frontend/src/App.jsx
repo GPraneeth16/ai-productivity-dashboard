@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Trash2, Edit3, Save, X, CheckCircle2, Circle, AlertCircle, Plus, Calendar, Flag, Folder, StickyNote, Activity, Target, LogOut, User, Settings, BarChart3, Moon, Sun, Search, Download } from "lucide-react";
-const API_URL = "http://localhost:5000";
+const API_URL = "https://dashboard-backend.onrender.com";
 
 function App() {
   // Auth state
