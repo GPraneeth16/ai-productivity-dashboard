@@ -148,21 +148,21 @@ function App() {
   };
 
   const deleteTodo = async (id) => {
-  try {
-    const res = await fetch(`${API_URL}/todos/${id}`, { 
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.error || "Failed to delete todo");
+    try {
+      const res = await fetch(`${API_URL}/todos/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to delete todo");
+      }
+      setTodos(todos.filter((todo) => todo._id !== id));
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert(err.message);
     }
-    setTodos(todos.filter((todo) => todo._id !== id));
-  } catch (err) {
-    console.error("Delete error:", err);
-    alert(err.message);
-  }
-};
+  };
 
   const toggleCompleted = async (id, completed) => {
     try {
@@ -690,7 +690,7 @@ function App() {
                 <Sparkles className="text-white" size={18} />
               </div>
               <div className="min-w-0">
-                <h1 className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white truncate">Dashboard</h1>
+                <h1 className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white truncate">Productivity Dashboard</h1>
                 <p className="text-xs text-gray-600 dark:text-gray-400 truncate">Hey, {user?.name}! 👋</p>
               </div>
             </div>
@@ -750,20 +750,20 @@ function App() {
 
             {/* Task Manager - Modern Card */}
             <div className="bg-white dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border-2 border-gray-300 dark:border-gray-800/50 overflow-hidden shadow-md">
-              <div className="border-b-2 border-gray-300 dark:border-gray-800/50 px-6 py-4 bg-gray-50 dark:bg-transparent">
-                <div className="flex items-center justify-between">
+              <div className="border-b-2 border-gray-300 dark:border-gray-800/50 px-4 sm:px-6 py-4 bg-gray-50 dark:bg-transparent">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <CheckCircle2 className="text-violet-600" size={24} />
                     Tasks
                   </h2>
-                  <div className="relative">
+                  <div className="relative w-full sm:w-auto">
                     <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <input
                       type="text"
                       placeholder="Search..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none"
+                      className="w-full sm:w-auto pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none"
                     />
                   </div>
                 </div>
@@ -786,8 +786,8 @@ function App() {
                       type="date"
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
-                      placeholder="dd/mm/yyyy"
-                      className="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none shadow-sm"
+                      className="w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none shadow-sm appearance-none"
+                      style={{ colorScheme: darkMode ? 'dark' : 'light' }}
                     />
                     <select
                       value={category}
