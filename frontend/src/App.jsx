@@ -148,17 +148,21 @@ function App() {
   };
 
   const deleteTodo = async (id) => {
-    try {
-      const res = await fetch(`${API_URL}/todos/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error("Failed to delete todo");
-      setTodos(todos.filter((todo) => todo._id !== id));
-    } catch (err) {
-      alert(err.message);
+  try {
+    const res = await fetch(`${API_URL}/todos/${id}`, { 
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.error || "Failed to delete todo");
     }
-  };
+    setTodos(todos.filter((todo) => todo._id !== id));
+  } catch (err) {
+    console.error("Delete error:", err);
+    alert(err.message);
+  }
+};
 
   const toggleCompleted = async (id, completed) => {
     try {
@@ -388,8 +392,8 @@ function App() {
             <button
               onClick={() => setAuthMode("login")}
               className={`flex-1 py-2.5 rounded-lg font-medium transition-all duration-200 ${authMode === "login"
-                  ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg"
-                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg"
+                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                 }`}
             >
               Login
@@ -397,8 +401,8 @@ function App() {
             <button
               onClick={() => setAuthMode("signup")}
               className={`flex-1 py-2.5 rounded-lg font-medium transition-all duration-200 ${authMode === "signup"
-                  ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg"
-                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg"
+                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                 }`}
             >
               Sign Up
@@ -554,7 +558,7 @@ function App() {
                 {stats.priorityBreakdown.map(pri => (
                   <div key={pri._id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
                     <span className={`font-medium ${pri._id === 'High' ? 'text-red-600' :
-                        pri._id === 'Medium' ? 'text-amber-600' : 'text-green-600'
+                      pri._id === 'Medium' ? 'text-amber-600' : 'text-green-600'
                       }`}>{pri._id}</span>
                     <span className="font-semibold text-gray-900 dark:text-white bg-white dark:bg-gray-700 px-3 py-1 rounded-lg">{pri.count}</span>
                   </div>
@@ -686,7 +690,7 @@ function App() {
                 <Sparkles className="text-white" size={18} />
               </div>
               <div className="min-w-0">
-                <h1 className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white truncate">Productivity</h1>
+                <h1 className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white truncate">Dashboard</h1>
                 <p className="text-xs text-gray-600 dark:text-gray-400 truncate">Hey, {user?.name}! 👋</p>
               </div>
             </div>
@@ -782,6 +786,7 @@ function App() {
                       type="date"
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
+                      placeholder="dd/mm/yyyy"
                       className="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none shadow-sm"
                     />
                     <select
@@ -819,8 +824,8 @@ function App() {
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
                       className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${selectedCategory === cat
-                          ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg"
-                          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                        ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                         }`}
                     >
                       {cat}
@@ -841,10 +846,10 @@ function App() {
                       <div
                         key={todo._id}
                         className={`group border rounded-2xl p-4 transition-all hover:shadow-lg ${isOverdue(todo.dueDate, todo.completed)
-                            ? "border-red-300 bg-red-50/80 dark:bg-red-900/20"
-                            : todo.completed
-                              ? "border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/50"
-                              : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-violet-300 dark:hover:border-violet-700"
+                          ? "border-red-300 bg-red-50/80 dark:bg-red-900/20"
+                          : todo.completed
+                            ? "border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/50"
+                            : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-violet-300 dark:hover:border-violet-700"
                           }`}
                       >
                         {editingId === todo._id ? (
@@ -921,15 +926,15 @@ function App() {
                                   </span>
                                 )}
                                 <span className={`text-xs px-2 py-1 rounded-lg font-medium ${todo.category === 'Work' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' :
-                                    todo.category === 'Personal' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' :
-                                      todo.category === 'Study' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                                        'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400'
+                                  todo.category === 'Personal' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' :
+                                    todo.category === 'Study' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                                      'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400'
                                   }`}>
                                   {todo.category}
                                 </span>
                                 <span className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-medium ${todo.priority === 'High' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
-                                    todo.priority === 'Medium' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
-                                      'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                  todo.priority === 'Medium' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
+                                    'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
                                   }`}>
                                   <Flag size={12} />
                                   {todo.priority}
@@ -1062,8 +1067,8 @@ function App() {
                       key={h._id}
                       onClick={() => toggleHabit(h._id, h.completed)}
                       className={`p-3 rounded-xl text-left text-sm font-medium transition-all border-2 ${h.completed
-                          ? "bg-green-50 dark:bg-green-900/20 border-green-500 text-green-700 dark:text-green-400 shadow-md"
-                          : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-green-300 dark:hover:border-green-700"
+                        ? "bg-green-50 dark:bg-green-900/20 border-green-500 text-green-700 dark:text-green-400 shadow-md"
+                        : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-green-300 dark:hover:border-green-700"
                         }`}
                     >
                       <div className="flex items-center justify-between mb-1">
