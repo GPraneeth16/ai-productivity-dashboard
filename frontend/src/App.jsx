@@ -1,20 +1,18 @@
 import { useEffect, useState } from "react";
-import { Trash2, Edit3, Save, X, CheckCircle2, Circle, AlertCircle, Plus, Calendar, Flag, Folder, StickyNote, Activity, Target, LogOut, User, Settings, BarChart3, Moon, Sun, Search, Download } from "lucide-react";
-const API_URL = "https://dashboard-backend.onrender.com";
+import { Trash2, Edit3, Save, X, CheckCircle2, Circle, AlertCircle, Plus, Calendar, Flag, Folder, StickyNote, Activity, Target, LogOut, Settings, BarChart3, Moon, Sun, Search, Download, Sparkles, TrendingUp, Zap, Award } from "lucide-react";
+
+const API_URL = "http://localhost:5000";
 
 function App() {
-  // Auth state
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [user, setUser] = useState(null);
-  const [authMode, setAuthMode] = useState("login"); // 'login' or 'signup'
+  const [authMode, setAuthMode] = useState("login");
   const [authForm, setAuthForm] = useState({ name: "", email: "", password: "" });
 
-  // UI state
   const [darkMode, setDarkMode] = useState(localStorage.getItem("darkMode") === "true");
-  const [currentView, setCurrentView] = useState("dashboard"); // 'dashboard', 'stats', 'settings'
+  const [currentView, setCurrentView] = useState("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Data state
   const [todos, setTodos] = useState([]);
   const [goals, setGoals] = useState([]);
   const [notes, setNotes] = useState([]);
@@ -24,28 +22,22 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Todo form states
   const [text, setText] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [category, setCategory] = useState("Work");
   const [priority, setPriority] = useState("Medium");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  // Edit states
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
   const [editDueDate, setEditDueDate] = useState("");
   const [editCategory, setEditCategory] = useState("");
   const [editPriority, setEditPriority] = useState("");
 
-  // Input states
   const [goalInput, setGoalInput] = useState("");
   const [noteInput, setNoteInput] = useState("");
   const [habitInput, setHabitInput] = useState("");
 
-  
-
-  // Dark mode toggle
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -55,7 +47,6 @@ function App() {
     localStorage.setItem("darkMode", darkMode);
   }, [darkMode]);
 
-  // Fetch user data
   useEffect(() => {
     if (token) {
       fetchUserData();
@@ -67,8 +58,6 @@ function App() {
   const fetchUserData = async () => {
     try {
       setLoading(true);
-      
-      // Fetch user profile
       const userRes = await fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -76,7 +65,6 @@ function App() {
       const userData = await userRes.json();
       setUser(userData);
 
-      // Fetch all data in parallel
       const [todosRes, goalsRes, notesRes, habitsRes, statsRes] = await Promise.all([
         fetch(`${API_URL}/todos`, { headers: { Authorization: `Bearer ${token}` } }),
         fetch(`${API_URL}/goals`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -90,19 +78,15 @@ function App() {
       setNotes(await notesRes.json());
       setHabits(await habitsRes.json());
       setStats(await statsRes.json());
-      
       setError(null);
     } catch (err) {
       setError(err.message);
-      if (err.message === "Session expired") {
-        handleLogout();
-      }
+      if (err.message === "Session expired") handleLogout();
     } finally {
       setLoading(false);
     }
   };
 
-  // Auth functions
   const handleAuth = async (e) => {
     e.preventDefault();
     try {
@@ -113,8 +97,13 @@ function App() {
         body: JSON.stringify(authForm)
       });
 
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server error");
+      }
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || "Authentication failed");
 
       localStorage.setItem("token", data.token);
       setToken(data.token);
@@ -135,10 +124,8 @@ function App() {
     setHabits([]);
   };
 
-  // Todo functions
   const addTodo = async () => {
     if (!text.trim()) return;
-    
     try {
       const res = await fetch(`${API_URL}/todos`, {
         method: "POST",
@@ -148,9 +135,7 @@ function App() {
         },
         body: JSON.stringify({ text, dueDate, category, priority }),
       });
-      
       if (!res.ok) throw new Error("Failed to add todo");
-      
       const newTodo = await res.json();
       setTodos([...todos, newTodo]);
       setText("");
@@ -185,7 +170,6 @@ function App() {
         },
         body: JSON.stringify({ completed: !completed }),
       });
-      
       if (!res.ok) throw new Error("Failed to update todo");
       const updated = await res.json();
       setTodos(todos.map((t) => (t._id === id ? updated : t)));
@@ -204,7 +188,6 @@ function App() {
 
   const saveEdit = async (id) => {
     if (!editText.trim()) return;
-    
     try {
       const res = await fetch(`${API_URL}/todos/${id}`, {
         method: "PATCH",
@@ -219,7 +202,6 @@ function App() {
           priority: editPriority
         }),
       });
-      
       if (!res.ok) throw new Error("Failed to update todo");
       const updated = await res.json();
       setTodos(todos.map((t) => (t._id === id ? updated : t)));
@@ -229,7 +211,6 @@ function App() {
     }
   };
 
-  // Goal functions
   const addGoal = async () => {
     if (!goalInput.trim()) return;
     try {
@@ -278,7 +259,6 @@ function App() {
     }
   };
 
-  // Note functions
   const addNote = async () => {
     if (!noteInput.trim()) return;
     try {
@@ -310,7 +290,6 @@ function App() {
     }
   };
 
-  // Habit functions
   const addHabit = async () => {
     if (!habitInput.trim()) return;
     try {
@@ -359,15 +338,8 @@ function App() {
     }
   };
 
-  // Export data
   const exportData = () => {
-    const data = {
-      todos,
-      goals,
-      notes,
-      habits,
-      exportedAt: new Date().toISOString()
-    };
+    const data = { todos, goals, notes, habits, exportedAt: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -391,36 +363,44 @@ function App() {
   const completedCount = todos.filter((t) => t.completed).length;
   const totalTasks = todos.length;
 
-  // Login/Signup Screen
+  // Login/Signup Screen - Modern Design
   if (!token) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+      <div className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute w-96 h-96 -top-48 -left-48 bg-white/10 rounded-full blur-3xl"></div>
+          <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-white/10 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="relative bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-md p-8 border border-white/20">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold text-2xl">PD</span>
+            <div className="w-20 h-20 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="text-white" size={32} />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Productivity Dashboard</h1>
-            <p className="text-gray-600 mt-2">Organize your life, one task at a time</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+              Productivity Dashboard
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Organize your life, one task at a time</p>
           </div>
 
-          <div className="flex gap-2 mb-6">
+          <div className="flex gap-2 mb-6 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
             <button
               onClick={() => setAuthMode("login")}
-              className={`flex-1 py-2 rounded-lg font-medium transition ${
+              className={`flex-1 py-2.5 rounded-lg font-medium transition-all duration-200 ${
                 authMode === "login"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
               Login
             </button>
             <button
               onClick={() => setAuthMode("signup")}
-              className={`flex-1 py-2 rounded-lg font-medium transition ${
+              className={`flex-1 py-2.5 rounded-lg font-medium transition-all duration-200 ${
                 authMode === "signup"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
               Sign Up
@@ -430,38 +410,38 @@ function App() {
           <form onSubmit={handleAuth} className="space-y-4">
             {authMode === "signup" && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
                 <input
                   type="text"
                   placeholder="John Doe"
                   value={authForm.name}
                   onChange={(e) => setAuthForm({ ...authForm, name: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   required
                 />
               </div>
             )}
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
               <input
                 type="email"
                 placeholder="you@example.com"
                 value={authForm.email}
                 onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
               <input
                 type="password"
                 placeholder="••••••••"
                 value={authForm.password}
                 onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                 required
                 minLength={6}
               />
@@ -469,17 +449,17 @@ function App() {
 
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition"
+              className="w-full bg-gradient-to-r from-violet-500 to-purple-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]"
             >
-              {authMode === "login" ? "Login" : "Create Account"}
+              {authMode === "login" ? "Login to Continue" : "Create Account"}
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
             {authMode === "login" ? "Don't have an account? " : "Already have an account? "}
             <button
               onClick={() => setAuthMode(authMode === "login" ? "signup" : "login")}
-              className="text-indigo-600 font-medium hover:underline"
+              className="text-violet-600 dark:text-violet-400 font-medium hover:underline"
             >
               {authMode === "login" ? "Sign up" : "Login"}
             </button>
@@ -491,10 +471,10 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <div className="text-gray-600 dark:text-gray-400">Loading your workspace...</div>
+          <div className="w-16 h-16 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="text-gray-600 dark:text-gray-400 font-medium">Loading your workspace...</div>
         </div>
       </div>
     );
@@ -503,19 +483,17 @@ function App() {
   // Statistics View
   if (currentView === "stats" && stats) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-slate-900">
+        <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => setCurrentView("dashboard")}
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                >
-                  ← Back to Dashboard
-                </button>
-              </div>
-              <button onClick={handleLogout} className="text-gray-600 dark:text-gray-400 hover:text-red-600">
+              <button
+                onClick={() => setCurrentView("dashboard")}
+                className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center gap-2"
+              >
+                ← Back
+              </button>
+              <button onClick={handleLogout} className="text-gray-600 dark:text-gray-400 hover:text-red-500">
                 <LogOut size={20} />
               </button>
             </div>
@@ -523,56 +501,65 @@ function App() {
         </nav>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Statistics & Analytics</h1>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+              <BarChart3 className="text-violet-600" />
+              Analytics Dashboard
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Track your productivity metrics</p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm text-gray-600 dark:text-gray-400 mb-2">Tasks</h3>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{stats.todos.total}</div>
-              <div className="text-sm text-green-600">{stats.todos.completionRate}% completed</div>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm text-gray-600 dark:text-gray-400 mb-2">Goals</h3>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{stats.goals.total}</div>
-              <div className="text-sm text-green-600">{stats.goals.completionRate}% completed</div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm text-gray-600 dark:text-gray-400 mb-2">Habits</h3>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{stats.habits.total}</div>
-              <div className="text-sm text-green-600">{stats.habits.completionRate}% completed</div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm text-gray-600 dark:text-gray-400 mb-2">Notes</h3>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">{stats.notes.total}</div>
-            </div>
+            {[
+              { title: "Tasks", value: stats.todos.total, rate: stats.todos.completionRate, icon: CheckCircle2, color: "violet" },
+              { title: "Goals", value: stats.goals.total, rate: stats.goals.completionRate, icon: Target, color: "blue" },
+              { title: "Habits", value: stats.habits.total, rate: stats.habits.completionRate, icon: TrendingUp, color: "green" },
+              { title: "Notes", value: stats.notes.total, rate: null, icon: StickyNote, color: "amber" }
+            ].map((stat, i) => (
+              <div key={i} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-6 rounded-2xl border border-gray-200/50 dark:border-gray-800/50 hover:shadow-lg transition-shadow">
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`p-3 rounded-xl bg-${stat.color}-100 dark:bg-${stat.color}-900/20`}>
+                    <stat.icon className={`text-${stat.color}-600 dark:text-${stat.color}-400`} size={24} />
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{stat.value}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">{stat.title}</div>
+                {stat.rate !== null && (
+                  <div className="mt-2 text-sm font-medium text-green-600">{stat.rate}% complete</div>
+                )}
+              </div>
+            ))}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Tasks by Category</h3>
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-6 rounded-2xl border border-gray-200/50 dark:border-gray-800/50">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <Folder size={18} />
+                Tasks by Category
+              </h3>
               <div className="space-y-3">
                 {stats.categoryBreakdown.map(cat => (
-                  <div key={cat._id} className="flex items-center justify-between">
+                  <div key={cat._id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
                     <span className="text-gray-700 dark:text-gray-300">{cat._id}</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">{cat.count}</span>
+                    <span className="font-semibold text-gray-900 dark:text-white bg-white dark:bg-gray-700 px-3 py-1 rounded-lg">{cat.count}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Tasks by Priority</h3>
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-6 rounded-2xl border border-gray-200/50 dark:border-gray-800/50">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <Flag size={18} />
+                Tasks by Priority
+              </h3>
               <div className="space-y-3">
                 {stats.priorityBreakdown.map(pri => (
-                  <div key={pri._id} className="flex items-center justify-between">
-                    <span className={`${
+                  <div key={pri._id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+                    <span className={`font-medium ${
                       pri._id === 'High' ? 'text-red-600' :
                       pri._id === 'Medium' ? 'text-amber-600' : 'text-green-600'
                     }`}>{pri._id}</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">{pri.count}</span>
+                    <span className="font-semibold text-gray-900 dark:text-white bg-white dark:bg-gray-700 px-3 py-1 rounded-lg">{pri.count}</span>
                   </div>
                 ))}
               </div>
@@ -586,19 +573,17 @@ function App() {
   // Settings View
   if (currentView === "settings") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-slate-900">
+        <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => setCurrentView("dashboard")}
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                >
-                  ← Back to Dashboard
-                </button>
-              </div>
-              <button onClick={handleLogout} className="text-gray-600 dark:text-gray-400 hover:text-red-600">
+              <button
+                onClick={() => setCurrentView("dashboard")}
+                className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center gap-2"
+              >
+                ← Back
+              </button>
+              <button onClick={handleLogout} className="text-gray-600 dark:text-gray-400 hover:text-red-500">
                 <LogOut size={20} />
               </button>
             </div>
@@ -606,64 +591,87 @@ function App() {
         </nav>
 
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Settings</h1>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+              <Settings className="text-violet-600" />
+              Settings
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Manage your account and preferences</p>
+          </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 divide-y dark:divide-gray-700">
-            <div className="p-6">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Profile</h3>
-              <div className="space-y-4">
+          <div className="space-y-6">
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 overflow-hidden">
+              <div className="p-6 border-b border-gray-200/50 dark:border-gray-800/50">
+                <h3 className="font-semibold text-gray-900 dark:text-white">Profile Information</h3>
+              </div>
+              <div className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name</label>
-                  <div className="text-gray-900 dark:text-white">{user?.name}</div>
+                  <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl text-gray-900 dark:text-white">{user?.name}</div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
-                  <div className="text-gray-900 dark:text-white">{user?.email}</div>
+                  <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl text-gray-900 dark:text-white">{user?.email}</div>
                 </div>
               </div>
             </div>
 
-            <div className="p-6">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Preferences</h3>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium text-gray-900 dark:text-white">Dark Mode</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Use dark theme</div>
-                </div>
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                    darkMode ? "bg-indigo-600" : "bg-gray-200"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                      darkMode ? "translate-x-6" : "translate-x-1"
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 overflow-hidden">
+              <div className="p-6 border-b border-gray-200/50 dark:border-gray-800/50">
+                <h3 className="font-semibold text-gray-900 dark:text-white">Appearance</h3>
+              </div>
+              <div className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {darkMode ? <Moon className="text-violet-600" size={20} /> : <Sun className="text-amber-500" size={20} />}
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">Dark Mode</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Toggle dark theme</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setDarkMode(!darkMode)}
+                    className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                      darkMode ? "bg-violet-600" : "bg-gray-300"
                     }`}
-                  />
+                  >
+                    <span
+                      className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                        darkMode ? "translate-x-7" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 overflow-hidden">
+              <div className="p-6 border-b border-gray-200/50 dark:border-gray-800/50">
+                <h3 className="font-semibold text-gray-900 dark:text-white">Data Management</h3>
+              </div>
+              <div className="p-6">
+                <button
+                  onClick={exportData}
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all"
+                >
+                  <Download size={18} />
+                  Export All Data
                 </button>
               </div>
             </div>
 
-            <div className="p-6">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Data Management</h3>
-              <button
-                onClick={exportData}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-              >
-                <Download size={16} />
-                Export All Data
-              </button>
-            </div>
-
-            <div className="p-6">
-              <h3 className="font-semibold text-red-600 mb-4">Danger Zone</h3>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                Logout
-              </button>
+            <div className="bg-red-50/80 dark:bg-red-900/20 backdrop-blur-xl rounded-2xl border border-red-200/50 dark:border-red-800/50 overflow-hidden">
+              <div className="p-6 border-b border-red-200/50 dark:border-red-800/50">
+                <h3 className="font-semibold text-red-600">Danger Zone</h3>
+              </div>
+              <div className="p-6">
+                <button
+                  onClick={handleLogout}
+                  className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -671,45 +679,45 @@ function App() {
     );
   }
 
-  // Main Dashboard
+  // Main Dashboard - Modern Design
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Top Navigation */}
-      <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+    <div className="min-h-screen bg-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:to-slate-900">
+      {/* Modern Navigation */}
+      <nav className="bg-white dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-300 dark:border-gray-800/50 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">PD</span>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+                <Sparkles className="text-white" size={20} />
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Productivity Dashboard</h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Welcome back, {user?.name}</p>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">Productivity Dashboard</h1>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Hey, {user?.name}! 👋</p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setDarkMode(!darkMode)}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                className="p-2.5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-xl transition-colors"
               >
                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
               </button>
               <button
                 onClick={() => setCurrentView("stats")}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                className="p-2.5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-xl transition-colors"
               >
                 <BarChart3 size={20} />
               </button>
               <button
                 onClick={() => setCurrentView("settings")}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                className="p-2.5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-xl transition-colors"
               >
                 <Settings size={20} />
               </button>
               <button
                 onClick={handleLogout}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 rounded-lg"
+                className="p-2.5 text-gray-600 dark:text-gray-400 hover:text-red-500 rounded-xl transition-colors"
               >
                 <LogOut size={20} />
               </button>
@@ -724,61 +732,54 @@ function App() {
           {/* Main Content */}
           <div className="col-span-12 lg:col-span-8 space-y-6">
             
-            {/* Quick Stats */}
+            {/* Modern Stats Cards */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">{totalTasks}</span>
-                  <Folder className="text-gray-400" size={20} />
+              {[
+                { label: "Total", value: totalTasks, icon: Zap, color: "violet" },
+                { label: "Done", value: completedCount, icon: Award, color: "green" },
+                { label: "Active", value: totalTasks - completedCount, icon: TrendingUp, color: "amber" }
+              ].map((stat, i) => (
+                <div key={i} className="bg-white dark:bg-gray-900/80 backdrop-blur-xl p-5 rounded-2xl border-2 border-gray-300 dark:border-gray-800/50 hover:shadow-xl hover:scale-105 transition-all duration-200 shadow-sm">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{stat.label}</span>
+                    <stat.icon className={`text-${stat.color}-500`} size={18} />
+                  </div>
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Tasks</p>
-              </div>
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-green-600">{completedCount}</span>
-                  <CheckCircle2 className="text-green-400" size={20} />
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Completed</p>
-              </div>
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-amber-600">{totalTasks - completedCount}</span>
-                  <Activity className="text-amber-400" size={20} />
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Pending</p>
-              </div>
+              ))}
             </div>
 
-            {/* Task Management */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+            {/* Task Manager - Modern Card */}
+            <div className="bg-white dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border-2 border-gray-300 dark:border-gray-800/50 overflow-hidden shadow-md">
+              <div className="border-b-2 border-gray-300 dark:border-gray-800/50 px-6 py-4 bg-gray-50 dark:bg-transparent">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Task Manager</h2>
-                  <div className="flex items-center gap-2">
-                    <div className="relative">
-                      <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Search tasks..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9 pr-4 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
-                      />
-                    </div>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <CheckCircle2 className="text-violet-600" size={24} />
+                    Tasks
+                  </h2>
+                  <div className="relative">
+                    <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none"
+                    />
                   </div>
                 </div>
               </div>
 
               <div className="p-6">
-                {/* Add Task */}
-                <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                {/* Add Task - Modern Form */}
+                <div className="mb-6 p-5 bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/10 dark:to-purple-900/10 rounded-2xl border-2 border-violet-200 dark:border-violet-800/50 shadow-sm">
                   <input
                     type="text"
-                    placeholder="What needs to be done?"
+                    placeholder="What's on your mind?"
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addTodo()}
-                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg mb-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-700 rounded-xl mb-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none shadow-sm"
                   />
                   
                   <div className="grid grid-cols-4 gap-3">
@@ -786,12 +787,12 @@ function App() {
                       type="date"
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                      className="px-3 py-2 border-2 border-gray-300 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none shadow-sm"
                     />
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                      className="px-3 py-2 border-2 border-gray-300 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none shadow-sm"
                     >
                       <option>Work</option>
                       <option>Personal</option>
@@ -801,7 +802,7 @@ function App() {
                     <select
                       value={priority}
                       onChange={(e) => setPriority(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                      className="px-3 py-2 border-2 border-gray-300 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none shadow-sm"
                     >
                       <option>High</option>
                       <option>Medium</option>
@@ -809,23 +810,23 @@ function App() {
                     </select>
                     <button
                       onClick={addTodo}
-                      className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center justify-center gap-2"
+                      className="bg-gradient-to-r from-violet-500 to-purple-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:shadow-lg transition-all flex items-center justify-center gap-2 shadow-md"
                     >
                       <Plus size={16} /> Add
                     </button>
                   </div>
                 </div>
 
-                {/* Filters */}
+                {/* Category Filters - Modern Pills */}
                 <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
                   {["All", "Work", "Personal", "Study", "Other"].map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition ${
+                      className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                         selectedCategory === cat
-                          ? "bg-indigo-600 text-white"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                          ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                       }`}
                     >
                       {cat}
@@ -833,23 +834,24 @@ function App() {
                   ))}
                 </div>
 
-                {/* Task List */}
-                <div className="space-y-2">
+                {/* Task List - Modern Cards */}
+                <div className="space-y-3">
                   {filteredTodos.length === 0 ? (
-                    <div className="text-center py-12 text-gray-400">
-                      <Circle size={48} className="mx-auto mb-3 opacity-50" />
-                      <p className="text-sm">No tasks found</p>
+                    <div className="text-center py-16 text-gray-400">
+                      <Circle size={64} className="mx-auto mb-4 opacity-20" />
+                      <p className="text-lg font-medium">No tasks yet</p>
+                      <p className="text-sm">Add your first task above</p>
                     </div>
                   ) : (
                     filteredTodos.map((todo) => (
                       <div
                         key={todo._id}
-                        className={`group border rounded-lg p-4 transition hover:shadow-sm ${
+                        className={`group border rounded-2xl p-4 transition-all hover:shadow-lg ${
                           isOverdue(todo.dueDate, todo.completed)
-                            ? "border-red-300 bg-red-50 dark:bg-red-900/20"
+                            ? "border-red-300 bg-red-50/80 dark:bg-red-900/20"
                             : todo.completed
-                            ? "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
-                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                            ? "border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-800/50"
+                            : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-violet-300 dark:hover:border-violet-700"
                         }`}
                       >
                         {editingId === todo._id ? (
@@ -857,19 +859,19 @@ function App() {
                             <input
                               value={editText}
                               onChange={(e) => setEditText(e.target.value)}
-                              className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                              className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                             />
                             <div className="grid grid-cols-3 gap-2">
                               <input
                                 type="date"
                                 value={editDueDate}
                                 onChange={(e) => setEditDueDate(e.target.value)}
-                                className="px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                className="px-3 py-2 border rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                               />
                               <select
                                 value={editCategory}
                                 onChange={(e) => setEditCategory(e.target.value)}
-                                className="px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                className="px-3 py-2 border rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                               >
                                 <option>Work</option>
                                 <option>Personal</option>
@@ -879,7 +881,7 @@ function App() {
                               <select
                                 value={editPriority}
                                 onChange={(e) => setEditPriority(e.target.value)}
-                                className="px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                className="px-3 py-2 border rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                               >
                                 <option>High</option>
                                 <option>Medium</option>
@@ -889,15 +891,15 @@ function App() {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => saveEdit(todo._id)}
-                                className="px-3 py-1.5 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                                className="px-4 py-2 bg-green-600 text-white rounded-xl text-sm hover:bg-green-700 flex items-center gap-1"
                               >
-                                Save
+                                <Save size={14} /> Save
                               </button>
                               <button
                                 onClick={() => setEditingId(null)}
-                                className="px-3 py-1.5 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-white rounded text-sm hover:bg-gray-400 dark:hover:bg-gray-500"
+                                className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-white rounded-xl text-sm hover:bg-gray-400 dark:hover:bg-gray-500 flex items-center gap-1"
                               >
-                                Cancel
+                                <X size={14} /> Cancel
                               </button>
                             </div>
                           </div>
@@ -908,36 +910,41 @@ function App() {
                               className="mt-0.5 flex-shrink-0"
                             >
                               {todo.completed ? (
-                                <CheckCircle2 size={20} className="text-green-500" />
+                                <CheckCircle2 size={24} className="text-green-500" />
                               ) : (
-                                <Circle size={20} className="text-gray-300 dark:text-gray-600 hover:text-gray-400" />
+                                <Circle size={24} className="text-gray-300 dark:text-gray-600 hover:text-violet-500 transition-colors" />
                               )}
                             </button>
                             
                             <div className="flex-1 min-w-0">
-                              <p className={`text-sm ${todo.completed ? "line-through text-gray-400 dark:text-gray-500" : "text-gray-900 dark:text-white"}`}>
+                              <p className={`text-base font-medium ${todo.completed ? "line-through text-gray-400 dark:text-gray-500" : "text-gray-900 dark:text-white"}`}>
                                 {todo.text}
                               </p>
-                              <div className="flex items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                              <div className="flex items-center gap-2 mt-2 flex-wrap">
                                 {todo.dueDate && (
-                                  <span className="flex items-center gap-1">
+                                  <span className="flex items-center gap-1 text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-600 dark:text-gray-400">
                                     <Calendar size={12} />
                                     {new Date(todo.dueDate).toLocaleDateString()}
                                   </span>
                                 )}
-                                <span className="flex items-center gap-1">
-                                  <Folder size={12} />
+                                <span className={`text-xs px-2 py-1 rounded-lg font-medium ${
+                                  todo.category === 'Work' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' :
+                                  todo.category === 'Personal' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' :
+                                  todo.category === 'Study' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                                  'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400'
+                                }`}>
                                   {todo.category}
                                 </span>
-                                <span className={`flex items-center gap-1 ${
-                                  todo.priority === 'High' ? 'text-red-600' :
-                                  todo.priority === 'Medium' ? 'text-amber-600' : 'text-green-600'
+                                <span className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-medium ${
+                                  todo.priority === 'High' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
+                                  todo.priority === 'Medium' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
+                                  'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
                                 }`}>
                                   <Flag size={12} />
                                   {todo.priority}
                                 </span>
                                 {isOverdue(todo.dueDate, todo.completed) && (
-                                  <span className="text-red-600 flex items-center gap-1">
+                                  <span className="flex items-center gap-1 text-xs px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg font-medium">
                                     <AlertCircle size={12} />
                                     Overdue
                                   </span>
@@ -945,18 +952,18 @@ function App() {
                               </div>
                             </div>
                             
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
                                 onClick={() => startEdit(todo)}
-                                className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded"
+                                className="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-xl transition-colors"
                               >
-                                <Edit3 size={14} />
+                                <Edit3 size={16} />
                               </button>
                               <button
                                 onClick={() => deleteTodo(todo._id)}
-                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
                               >
-                                <Trash2 size={14} />
+                                <Trash2 size={16} />
                               </button>
                             </div>
                           </div>
@@ -969,35 +976,37 @@ function App() {
             </div>
           </div>
 
-          {/* Sidebar - Goals, Habits, Notes */}
+          {/* Sidebar - Modern Cards */}
           <div className="col-span-12 lg:col-span-4 space-y-6">
             
             {/* Daily Goals */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <div className="border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+            <div className="bg-white dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border-2 border-gray-300 dark:border-gray-800/50 overflow-hidden shadow-md">
+              <div className="border-b-2 border-gray-300 dark:border-gray-800/50 px-5 py-4 bg-gray-50 dark:bg-transparent">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <Target size={16} className="text-indigo-600" />
-                    Daily Goals
+                  <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <Target className="text-indigo-600" size={20} />
+                    Goals
                   </h3>
-                  <span className="text-xs text-gray-500">{goals.filter(g => g.completed).length}/{goals.length}</span>
+                  <span className="text-xs font-medium px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-lg">
+                    {goals.filter(g => g.completed).length}/{goals.length}
+                  </span>
                 </div>
               </div>
               
-              <div className="p-4">
-                <div className="flex gap-2 mb-3">
+              <div className="p-5">
+                <div className="flex gap-2 mb-4">
                   <input
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
-                    placeholder="Add a goal..."
+                    className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none"
+                    placeholder="New goal..."
                     value={goalInput}
                     onChange={(e) => setGoalInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addGoal()}
                   />
                   <button
                     onClick={addGoal}
-                    className="px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                    className="px-3 py-2 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all"
                   >
-                    <Plus size={16} />
+                    <Plus size={18} />
                   </button>
                 </div>
 
@@ -1005,21 +1014,21 @@ function App() {
                   {goals.map((g) => (
                     <div
                       key={g._id}
-                      className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded group"
+                      className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-xl group transition-colors"
                     >
                       <div className="flex items-center gap-2 flex-1">
                         <input
                           type="checkbox"
                           checked={g.completed}
                           onChange={() => toggleGoal(g._id, g.completed)}
-                          className="rounded text-indigo-600 focus:ring-indigo-500"
+                          className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
                         />
                         <span className={`text-sm ${g.completed ? "line-through text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-300"}`}>
                           {g.text}
                         </span>
                       </div>
                       <button
-                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600"
+                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 transition-all"
                         onClick={() => deleteGoal(g._id)}
                       >
                         <Trash2 size={14} />
@@ -1030,19 +1039,19 @@ function App() {
               </div>
             </div>
 
-            {/* Habit Tracker */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <div className="border-b border-gray-200 dark:border-gray-700 px-4 py-3">
-                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <Activity size={16} className="text-green-600" />
+            {/* Habits */}
+            <div className="bg-white dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border-2 border-gray-300 dark:border-gray-800/50 overflow-hidden shadow-md">
+              <div className="border-b-2 border-gray-300 dark:border-gray-800/50 px-5 py-4 bg-gray-50 dark:bg-transparent">
+                <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Activity className="text-green-600" size={20} />
                   Habits
                 </h3>
               </div>
               
-              <div className="p-4">
-                <div className="flex gap-2 mb-3">
+              <div className="p-5">
+                <div className="flex gap-2 mb-4">
                   <input
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none"
                     placeholder="New habit..."
                     value={habitInput}
                     onChange={(e) => setHabitInput(e.target.value)}
@@ -1050,9 +1059,9 @@ function App() {
                   />
                   <button
                     onClick={addHabit}
-                    className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                    className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-lg transition-all"
                   >
-                    <Plus size={16} />
+                    <Plus size={18} />
                   </button>
                 </div>
 
@@ -1061,43 +1070,34 @@ function App() {
                     <button
                       key={h._id}
                       onClick={() => toggleHabit(h._id, h.completed)}
-                      className={`p-3 rounded-lg text-left text-sm font-medium transition border-2 ${
+                      className={`p-3 rounded-xl text-left text-sm font-medium transition-all border-2 ${
                         h.completed
-                          ? "bg-green-50 dark:bg-green-900/20 border-green-500 text-green-700 dark:text-green-400"
-                          : "bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500"
+                          ? "bg-green-50 dark:bg-green-900/20 border-green-500 text-green-700 dark:text-green-400 shadow-md"
+                          : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-green-300 dark:hover:border-green-700"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="truncate">{h.name}</span>
-                        {h.completed && <CheckCircle2 size={14} />}
+                        {h.completed && <CheckCircle2 size={16} />}
                       </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteHabit(h._id);
-                        }}
-                        className="opacity-0 hover:opacity-100 text-xs text-red-600"
-                      >
-                        Delete
-                      </button>
                     </button>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* Quick Notes */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-              <div className="border-b border-gray-200 dark:border-gray-700 px-4 py-3">
-                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <StickyNote size={16} className="text-amber-600" />
+            {/* Notes */}
+            <div className="bg-white dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border-2 border-gray-300 dark:border-gray-800/50 overflow-hidden shadow-md">
+              <div className="border-b-2 border-gray-300 dark:border-gray-800/50 px-5 py-4 bg-gray-50 dark:bg-transparent">
+                <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <StickyNote className="text-amber-600" size={20} />
                   Notes
                 </h3>
               </div>
               
-              <div className="p-4">
+              <div className="p-5">
                 <textarea
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm mb-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm mb-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none"
                   rows="3"
                   placeholder="Quick note..."
                   value={noteInput}
@@ -1105,21 +1105,21 @@ function App() {
                 />
                 <button
                   onClick={addNote}
-                  className="w-full px-4 py-2 bg-amber-500 text-white rounded text-sm font-medium hover:bg-amber-600"
+                  className="w-full px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl text-sm font-medium hover:shadow-lg transition-all"
                 >
                   Save Note
                 </button>
 
-                <div className="space-y-2 mt-3 max-h-48 overflow-y-auto">
+                <div className="space-y-2 mt-4 max-h-48 overflow-y-auto">
                   {notes.map((n) => (
                     <div
                       key={n._id}
-                      className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg group relative"
+                      className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl group relative border border-amber-200/50 dark:border-amber-800/50"
                     >
                       <p className="text-sm text-gray-700 dark:text-gray-300 pr-6">{n.text}</p>
                       <p className="text-xs text-gray-400 mt-1">{new Date(n.createdAt).toLocaleDateString()}</p>
                       <button
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 transition-all"
                         onClick={() => deleteNote(n._id)}
                       >
                         <Trash2 size={12} />
@@ -1136,4 +1136,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;
