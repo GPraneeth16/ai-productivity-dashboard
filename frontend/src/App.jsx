@@ -782,7 +782,7 @@ function App() {
                     className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-700 rounded-xl mb-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none shadow-sm"
                   />
                   
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <input
                       type="date"
                       value={dueDate}
@@ -861,7 +861,7 @@ function App() {
                               onChange={(e) => setEditText(e.target.value)}
                               className="w-full px-3 py-2 border rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                             />
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                               <input
                                 type="date"
                                 value={editDueDate}
