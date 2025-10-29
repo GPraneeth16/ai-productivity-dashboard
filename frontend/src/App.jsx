@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Trash2, Edit3, Save, X, CheckCircle2, Circle, AlertCircle, Plus, Calendar, Flag, Folder, StickyNote, Activity, Target, LogOut, Settings, BarChart3, Moon, Sun, Search, Download, Sparkles, TrendingUp, Zap, Award } from "lucide-react";
 
 const BASE_URL = "https://dashboard-backend-4whv.onrender.com";
+const API_URL = BASE_URL;
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
