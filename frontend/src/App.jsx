@@ -148,21 +148,42 @@ function App() {
   };
 
   const deleteTodo = async (id) => {
-    try {
-      const res = await fetch(`${API_URL}/todos/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to delete todo");
+  try {
+    const res = await fetch(`${API_URL}/todos/${id}`, { 
+      method: "DELETE",
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
       }
+    });
+    
+    // If response is ok, delete from state immediately
+    if (res.ok) {
       setTodos(todos.filter((todo) => todo._id !== id));
-    } catch (err) {
-      console.error("Delete error:", err);
+      return;
+    }
+    
+    // Try to get error message from response
+    let errorMessage = "Failed to delete todo";
+    try {
+      const errorData = await res.json();
+      errorMessage = errorData.error || errorData.message || errorMessage;
+    } catch (e) {
+      errorMessage = res.statusText || errorMessage;
+    }
+    
+    throw new Error(errorMessage);
+  } catch (err) {
+    console.error("Delete error:", err);
+    
+    // Show error to user
+    if (err.message === "Failed to fetch") {
+      alert("Network error. Please check your connection.");
+    } else {
       alert(err.message);
     }
-  };
+  }
+};
 
   const toggleCompleted = async (id, completed) => {
     try {
@@ -782,13 +803,16 @@ function App() {
                   />
 
                   <div className="flex flex-col sm:grid sm:grid-cols-4 gap-3">
-                    <input
-                      type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                      className="w-full px-3 py-2.5 border-2 border-gray-300 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none shadow-sm appearance-none"
-                      style={{ colorScheme: darkMode ? 'dark' : 'light' }}
-                    />
+                    <div className="relative">
+                      <Calendar size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      <input
+                        type="date"
+                        value={dueDate}
+                        onChange={(e) => setDueDate(e.target.value)}
+                        className="w-full pl-10 pr-3 py-2.5 border-2 border-gray-300 dark:border-gray-700 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none shadow-sm"
+                        style={{ colorScheme: darkMode ? 'dark' : 'light' }}
+                      />
+                    </div>
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
@@ -948,7 +972,7 @@ function App() {
                               </div>
                             </div>
 
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                               <button
                                 onClick={() => startEdit(todo)}
                                 className="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-xl transition-colors"
